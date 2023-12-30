@@ -1,5 +1,7 @@
-import torch
+import pandas as pd
 import numpy as np
+from numpy import NaN
+import torch
 # Диапазон тензоров и тензоры по подобию имеющихся
 # master_range = torch.range(start=1, step=3, end=333)
 
@@ -52,38 +54,49 @@ import numpy as np
 # a = np.array([1, 0, 5, 2, 2])
 # b = np.vectorize(lambda x: (x - a.min())/(a.max() - a.min()))(a)
 # print(b)
-import pandas as pd
-import numpy as np
-from numpy import NaN
 
-# Создадим датафрейм с пропущенным значением признака Р для объекта А
-df = pd.DataFrame({'Молчание ягнят':[5,5,2,3], 
-                   'Титаник':[5,3,5,4], 
-                   'Матрица':[5,4,3,4], 
-                   'Гарри Поттер':[3,4,5,NaN]}, 
-                  index=['Вася', 'Петя', 'Маша', 'Саша'])
-print('df: \n', df)
-# Мин-макс нормализация
-#df = (df-df.min ())/(df.max ()-df.min ())
-#print('df_norm: \n', df)
-# Посчитаем метрики
-dict_metrics = {'Вася':[], 'Петя':[], 'Маша':[]}
-print('df.index: ', df.index[:-1])
-print('df.loc[Гарри Поттер]: \n ', df.loc[:]['Гарри Поттер'][-1])
-for i in df.index[:-1]:
-  dict_metrics[i].append(np.power((df.loc['Саша'][:-1]-df.loc[i][:-1]).pow(2).sum(), 0.5).round(2)) # считаем Евклидово расстояние
-  dict_metrics[i].append((df.loc['Саша'][:-1]-df.loc[i][:-1]).abs().sum()) # считаем Манхэттеновское расстояние
-  dict_metrics[i].append((df.loc['Саша'][:-1]-df.loc[i][:-1]).abs().max()) # считаем max-метрику
-print('dict_metrics: ',   dict_metrics) # {'A1': [1.41, 2.0, 1.0], 
-                                        #  'A2': [1.22, 2.0, 1.0], 
-                                        #  'A3': [0.87, 1.5, 0.5]}
-metrics = pd.DataFrame(dict_metrics, index=['Euclid', 'Manhatten', 'Max'])
-print('metrics: ', metrics)
-# Считаем варианты значений для каждой метрики
-dict_value = {'Euclid':[], 'Manhatten':[], 'Max':[]}
-for i in metrics.index:
-  norm_mul = (1/((1/metrics.loc[i]).sum())) # нормирующий множитель
-  similarity = ((df.loc[:]['Гарри Поттер'][:-1]/metrics.loc[i]).sum()) # значение признака * мера близости(=величина, обратно пропорциональная значению метрики)
-  value_P = (norm_mul*similarity).round(2)
-  dict_value[i].append(value_P)
-  print(f'значение признака Гарри Поттер для Саши по метрике {i}: {value_P}')
+# # Создадим датафрейм с пропущенным значением признака Р для объекта А
+# df = pd.DataFrame({'Молчание ягнят':[5,5,2,3], 
+#                    'Титаник':[5,3,5,4], 
+#                    'Матрица':[5,4,3,4], 
+#                    'Гарри Поттер':[3,4,5,NaN]}, 
+#                   index=['Вася', 'Петя', 'Маша', 'Саша'])
+# print('df: \n', df)
+# # Мин-макс нормализация
+# #df = (df-df.min ())/(df.max ()-df.min ())
+# #print('df_norm: \n', df)
+# # Посчитаем метрики
+# dict_metrics = {'Вася':[], 'Петя':[], 'Маша':[]}
+# print('df.index: ', df.index[:-1])
+# print('df.loc[Гарри Поттер]: \n ', df.loc[:]['Гарри Поттер'][-1])
+# for i in df.index[:-1]:
+#   dict_metrics[i].append(np.power((df.loc['Саша'][:-1]-df.loc[i][:-1]).pow(2).sum(), 0.5).round(2)) # считаем Евклидово расстояние
+#   dict_metrics[i].append((df.loc['Саша'][:-1]-df.loc[i][:-1]).abs().sum()) # считаем Манхэттеновское расстояние
+#   dict_metrics[i].append((df.loc['Саша'][:-1]-df.loc[i][:-1]).abs().max()) # считаем max-метрику
+# print('dict_metrics: ',   dict_metrics) # {'A1': [1.41, 2.0, 1.0], 
+#                                         #  'A2': [1.22, 2.0, 1.0], 
+#                                         #  'A3': [0.87, 1.5, 0.5]}
+# metrics = pd.DataFrame(dict_metrics, index=['Euclid', 'Manhatten', 'Max'])
+# print('metrics: ', metrics)
+# # Считаем варианты значений для каждой метрики
+# dict_value = {'Euclid':[], 'Manhatten':[], 'Max':[]}
+# for i in metrics.index:
+#   norm_mul = (1/((1/metrics.loc[i]).sum())) # нормирующий множитель
+#   similarity = ((df.loc[:]['Гарри Поттер'][:-1]/metrics.loc[i]).sum()) # значение признака * мера близости(=величина, обратно пропорциональная значению метрики)
+#   value_P = (norm_mul*similarity).round(2)
+#   dict_value[i].append(value_P)
+#   print(f'значение признака Гарри Поттер для Саши по метрике {i}: {value_P}')
+# Проверяем является ли значение выбросом методом квартилей
+# Q25 =  2
+# Q75 = 4
+# BL = Q25 - 1.5 * (Q75 - Q25)
+# BR = Q75 + 1.5 *(Q75 - Q25)
+# print(np.arange(BL, BR))
+# Проверяем является ли значение выбросом методом среднего значения, отклонения и медианы
+av = 10 # среднее значение
+S = 1.1 # отклонение
+m = 9 # медиана
+# так как медиана и среднее близки то выборка симметричная - коэффициент равен 3 (для нессиметричных было бы 5)
+BL =  av - 3 * S # левый край интервала
+BR = av + 3 * S # правый край интервала
+print(np.arange(BL, BR))
