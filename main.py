@@ -117,65 +117,86 @@ from numpy import NaN, ndarray
 # print('c:', manhet(c, b, a, d))
 # print('d:', manhet(d, b, c, a))
 
-# Реализация алгоритма к-средних (k-means) для кластеризации объектов по заранее известному количеству кластеров
-# 1 Создадим массив признаков [P1, P2]
-X = np.array([[4,2],[3,2],[1,-1],[-1,1],[0,4]])
-# Создадим 2 центра масс для 2х кластеров
-C = np.array([[2,3], [1,1]])
-# Расстояние Манхэттена
-manhattan = lambda X, Y: np.abs(X - Y).sum(axis=1)
-# Реализуем класс KMeans
-class KMeans:
-    # Инициализация.
-    # n_clusters - желаемое число кластеров. 
-    # centers - начальные значения центров кластеризации.
-    # max_iter - максимальное число итераций алгоритма.
-    # metric - метрика для расчета расстояний между центрами кластеризации и точек данных. (функция принимающая 2 числа и возвращающая число)
-    def __init__(self, n_clusters, centers, max_iter, metric):
-        self.n_clusters = n_clusters
-        self.centers = centers
-        self.max_iter = max_iter
-        self.metric = metric
-    @staticmethod
-    def __euclid(X1, X2):
-        # находим сумму квадратов расстояний между точками
-        sum_sq = np.sum(np.square(X1 - X2))
-        return sum_sq**0.5
-    # Найти центр масс точек.
-    @staticmethod
-    def __mass_center(X: ndarray[int]):
-        return X.mean(axis=0)
-    # Кластеризуем
-    def fit(self, X):
-        distances = np.zeros((self.n_clusters, len(X))) # Расстояния от центров кластеризации до точек.
-        self.n_iters = 0                                # Число итераций.
-        for _ in range(self.max_iter):
-            # Найти расстояния между центрами кластеризации и точками.
-            for i in range(self.n_clusters):
-                distances[i] = self.metric(self.centers[i], X)
+## КЛАСТЕРИЗАЦИЯ ##
+
+# # Реализация алгоритма к-средних (k-means) для кластеризации объектов по заранее известному количеству кластеров
+# # 1 Создадим массив признаков [P1, P2]
+# X = np.array([[4,2],[3,2],[1,-1],[-1,1],[0,4]])
+# # Создадим 2 центра масс для 2х кластеров
+# C = np.array([[2,3], [1,1]])
+# # Расстояние Манхэттена
+# manhattan = lambda X, Y: np.abs(X - Y).sum(axis=1)
+# # Реализуем класс KMeans
+# class KMeans:
+#     # Инициализация.
+#     # n_clusters - желаемое число кластеров. 
+#     # centers - начальные значения центров кластеризации.
+#     # max_iter - максимальное число итераций алгоритма.
+#     # metric - метрика для расчета расстояний между центрами кластеризации и точек данных. (функция принимающая 2 числа и возвращающая число)
+#     def __init__(self, n_clusters, centers, max_iter, metric):
+#         self.n_clusters = n_clusters
+#         self.centers = centers
+#         self.max_iter = max_iter
+#         self.metric = metric
+#     @staticmethod
+#     def __euclid(X1, X2):
+#         # находим сумму квадратов расстояний между точками
+#         sum_sq = np.sum(np.square(X1 - X2))
+#         return sum_sq**0.5
+#     # Найти центр масс точек.
+#     @staticmethod
+#     def __mass_center(X: ndarray[int]):
+#         return X.mean(axis=0)
+#     # Кластеризуем
+#     def fit(self, X):
+#         distances = np.zeros((self.n_clusters, len(X))) # Расстояния от центров кластеризации до точек.
+#         self.n_iters = 0                                # Число итераций.
+#         for _ in range(self.max_iter):
+#             # Найти расстояния между центрами кластеризации и точками.
+#             for i in range(self.n_clusters):
+#                 distances[i] = self.metric(self.centers[i], X)
             
-            # Найти метки точек.
-            self.labels = distances.argmin(axis=0)
+#             # Найти метки точек.
+#             self.labels = distances.argmin(axis=0)
 
-            # Найти новые значения центров кластеризации.
-            prev_centers = self.centers.copy()
-            for i in np.unique(self.labels):
-                self.centers[i] = self.__mass_center(X[self.labels == i])
+#             # Найти новые значения центров кластеризации.
+#             prev_centers = self.centers.copy()
+#             for i in np.unique(self.labels):
+#                 self.centers[i] = self.__mass_center(X[self.labels == i])
             
-            self.n_iters += 1 # Подсчитать число итераций алгоритма.
-            # Если центры кластеризации практически не меняются, завершить алгоритм. 
-            if self.__euclid(self.centers, prev_centers) < 10**-4:
-                break
-        return self
+#             self.n_iters += 1 # Подсчитать число итераций алгоритма.
+#             # Если центры кластеризации практически не меняются, завершить алгоритм. 
+#             if self.__euclid(self.centers, prev_centers) < 10**-4:
+#                 break
+#         return self
 
-centers = np.random.randn(3, 2)
-# Кластеризовать данные.
-kmean = KMeans(n_clusters=2, centers=C, max_iter=100, metric=manhattan).fit(X)
-print(f"Iterations: {kmean.n_iters}") # Вывести число итераций алгоритма.
+# centers = np.random.randn(3, 2)
+# # Кластеризовать данные.
+# kmean = KMeans(n_clusters=2, centers=C, max_iter=100, metric=manhattan).fit(X)
+# print(f"Iterations: {kmean.n_iters}") # Вывести число итераций алгоритма.
 
-# Отобразить кластеризованные данные и их центры масс. 
-plt.scatter(X[:, 0], X[:, 1], c=kmean.labels)
-plt.scatter(kmean.centers[:, 0], kmean.centers[:, 1], c='red')
-plt.show()
+# # Отобразить кластеризованные данные и их центры масс. 
+# plt.scatter(X[:, 0], X[:, 1], c=kmean.labels)
+# plt.scatter(kmean.centers[:, 0], kmean.centers[:, 1], c='red')
+# plt.show()
+
+## ПРЕДСКАЗАНИЕ ##
+# Есть массив известных признаков и предсказанных - надо найти среднюю абсолютную ошибку (MAE) и ее же в процентах (MAPE)
+real_list = [1, 2, 3, 4, 5, -1, -2, -3, -4, -5]
+predicted_list = [0, 2, 2, 5, 3, -1, -1, -4, -6, -5]
+def mae_mape(rl: list[int], pl: list[int], ) -> None:
+    sum_of_abs = 0
+    sum_of_quotients = 0
+    for real, predicted in zip(rl, pl):
+        sum_of_abs += abs(real - predicted)
+        sum_of_quotients += abs(real - predicted) / abs(real)
+    # mae равно сумме модулей разности реального признака и предсказанного поделить на количество признаков    
+    mae = sum_of_abs / len(rl)
+    # равно сумме модулей разности реального признака и предсказанного поделенного на модуль реального и все это поделить так же на количество признаков и в конце умножить на сто чтобы получить процент
+    mape = sum_of_quotients / len(rl) * 100
+    print(f'mae = {mae}, mape = {mape}')
+
+mae_mape(real_list, predicted_list)
+
 
 
